@@ -9,7 +9,7 @@ readme = "README.md"
 [workspace]
 resolver = "2"
 # TODO: тут нужно понять как где и кто
-members = ["main", "protocol", "services"]
+members = ["file-organizer", "libs/fs", "protocol", "services"]
 # exclude = []
 
 [workspace.dependencies]
@@ -17,14 +17,17 @@ members = ["main", "protocol", "services"]
 elfo = { version = "0.2.0-alpha.16", features = ["full"] }
 # async
 tokio = { version = "1", features = ["full"] }
+futures = "0.3"
 
 # логи
 tracing = "0.1"
 tracing-subscriber = "0.3"
-log = "0.4"
-env_logger = "0.11"
 
 # работа с файловой системой возможно стоит перенсти в либы акторов по необходимости
+# notify = { version = "6.1.1", default-features = false, features = [
+#   "macos_kqueue",
+# ] }
+notify = "6"
 walkdir = "2.5"
 image = "0.25"
 toml = "0.8.19"
