@@ -1,0 +1,36 @@
+[workspace.package]
+name = "FileOrganizer"
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+# TODO: 
+# description = ""
+
+[workspace]
+resolver = "2"
+# TODO: тут нужно понять как где и кто
+members = ["main", "protocol", "services"]
+# exclude = []
+
+[workspace.dependencies]
+# акторы
+elfo = { version = "0.2.0-alpha.16", features = ["full"] }
+# async
+tokio = { version = "1", features = ["full"] }
+
+# логи
+tracing = "0.1"
+tracing-subscriber = "0.3"
+log = "0.4"
+env_logger = "0.11"
+
+# работа с файловой системой возможно стоит перенсти в либы акторов по необходимости
+walkdir = "2.5"
+image = "0.25"
+toml = "0.8.19"
+
+
+[profile.release]
+lto = "fat"
+strip = true
+codegen-units = 1
