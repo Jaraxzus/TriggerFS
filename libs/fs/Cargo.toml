@@ -1,0 +1,19 @@
+[package]
+name = "fs"
+version.workspace = true
+edition.workspace = true
+readme.workspace = true
+
+
+[dependencies]
+# асинк 
+tokio.workspace = true
+futures.workspace = true
+
+daemonize = "0.5"
+
+# логи
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+notify.workspace = true
