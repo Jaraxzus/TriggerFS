@@ -6,5 +6,7 @@ pub fn init_logger() {
         .with_max_level(Level::TRACE) // Устанавливаем уровень логирования на TRACE
         .finish();
 
-    tracing::subscriber::set_global_default(subscriber).expect("Failed to set logger");
+    // tracing::subscriber::set_global_default(subscriber).expect("Failed to set logger");
+    // TODO: разобраться с тем как писать логи до демнизации и запуска асинтхронного рантайма
+    let _ = tracing::subscriber::set_default(subscriber);
 }

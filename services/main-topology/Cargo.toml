@@ -1,0 +1,9 @@
+[package]
+name = "main-topology"
+version.workspace = true
+edition.workspace = true
+readme.workspace = true
+
+[dependencies]
+elfo.workspace = true
+watcher = { path = "../../actors/watcher" }

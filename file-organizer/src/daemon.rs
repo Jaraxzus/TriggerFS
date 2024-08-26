@@ -28,16 +28,16 @@ impl Daemon {
 
         match daemonize.start() {
             Ok(_) => {
+                info!("Daemon started successfully");
                 let rt = Runtime::new().expect("Failed to create Tokio runtime");
+                info!("start tokio rt");
                 rt.block_on(async_main());
             }
             Err(e) => {
-                cleanup(pid_file);
                 eprintln!("Error while daemonizing: {}", e);
+                cleanup(pid_file);
             }
         }
-
-        info!("Daemon started successfully");
         Ok(())
     }
 }

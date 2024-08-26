@@ -10,6 +10,10 @@ readme.workspace = true
 
 
 [dependencies]
+# аторы 
+elfo.workspace = true
+main-topology = { path = "../services/main-topology" }
+
 # асинк 
 tokio.workspace = true
 futures.workspace = true

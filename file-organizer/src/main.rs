@@ -3,14 +3,13 @@ mod logger;
 mod signal_handler;
 
 use daemon::Daemon;
-use fs::FsWatcher;
 
-use tracing::error;
+use tracing::{error, info};
 
 const PID_FILE: &str = "/tmp/file-organizer.pid";
 
 fn main() {
-    // Инициализация логгера
+    // // Инициализация логгера
     logger::init_logger();
 
     // Инициализация и запуск демона
@@ -20,11 +19,8 @@ fn main() {
 }
 
 async fn async_main() {
-    let _ = tokio::spawn(signal_handler::handle_signals(PID_FILE)).await;
-    run().await
-}
-
-// run основаная работа
-async fn run() {
-    let _ = FsWatcher::new().unwrap();
+    info!("async_main called");
+    tokio::spawn(signal_handler::handle_signals(PID_FILE));
+    info!("start actors topology");
+    elfo::init::start(main_topology::topology()).await;
 }

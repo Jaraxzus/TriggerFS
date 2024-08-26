@@ -9,7 +9,7 @@ readme = "README.md"
 [workspace]
 resolver = "2"
 # TODO: тут нужно понять как где и кто
-members = ["file-organizer", "libs/fs", "protocol", "services"]
+members = ["actors/*", "file-organizer", "libs/*", "protocol", "services/*"]
 # exclude = []
 
 [workspace.dependencies]
@@ -24,14 +24,19 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 
 # работа с файловой системой возможно стоит перенсти в либы акторов по необходимости
-# notify = { version = "6.1.1", default-features = false, features = [
-#   "macos_kqueue",
-# ] }
-notify = "6"
+notify = { version = "6", features = ["default", "serde"] }
 walkdir = "2.5"
+infer = "0.16"
+
 image = "0.25"
 toml = "0.8.19"
 
+# серриализаци/дессериализация
+serde = "1"
+serde_json = "1"
+
+# другое
+regex = "1.10"
 
 [profile.release]
 lto = "fat"
