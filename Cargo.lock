@@ -491,7 +491,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 
 [[package]]
 name = "fs"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "futures",
  "infer",
@@ -938,7 +938,7 @@ dependencies = [
 
 [[package]]
 name = "main-topology"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "elfo",
  "watcher",
@@ -1749,7 +1749,7 @@ checksum = "c62a0a307cb4a311d3a07867860911ca130c3494e8c2719593806c08bc5d0484"
 
 [[package]]
 name = "watcher"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "elfo",
  "fs",
