@@ -18,6 +18,44 @@ pub struct CheckArgs {
     pub file_path: PathBuf,
 }
 
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum ConditionType {
+    Or,
+    And,
+}
+
+#[derive(Debug, Deserialize, Clone)]
+#[serde(rename_all = "snake_case")]
+pub enum ConditionOrConditionsGroup {
+    Condition(Condition),
+    ConditionGoup(ConditionsGroup),
+}
+
+impl ConditionChecker for ConditionOrConditionsGroup {
+    fn check(&self, args: &CheckArgs) -> bool {
+        match self {
+            ConditionOrConditionsGroup::Condition(cond) => cond.check(args),
+            ConditionOrConditionsGroup::ConditionGoup(conditions) => conditions.check(args),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Clone)]
+pub struct ConditionsGroup {
+    pub cond_type: ConditionType,
+    pub conditions: Vec<Condition>,
+}
+
+impl ConditionChecker for ConditionsGroup {
+    fn check(&self, args: &CheckArgs) -> bool {
+        match self.cond_type {
+            ConditionType::Or => self.conditions.iter().any(|cond| cond.check(args)),
+            ConditionType::And => self.conditions.iter().all(|cond| cond.check(args)),
+        }
+    }
+}
+
 // Condition представляет все возможные условия
 #[derive(Debug, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -128,9 +166,12 @@ impl From<&MatcherTypeInernal> for MatcherType {
         }
     }
 }
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum SizeUnit {
+    // TODO: возможно стоит использовать newType(https://lagleki.github.io/patterns/patterns/behavioural/newtype.html)
+    // или вообще найти готовый крейт думаю такой сто проц есть
     Bytes,
     Kilobytes,
     Megabytes,
