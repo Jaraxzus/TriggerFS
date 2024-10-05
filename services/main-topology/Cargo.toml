@@ -7,3 +7,4 @@ readme.workspace = true
 [dependencies]
 elfo.workspace = true
 watcher = { path = "../../actors/watcher" }
+executor = { path = "../../actors/executor" }

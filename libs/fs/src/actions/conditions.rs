@@ -1,6 +1,6 @@
 use infer::MatcherType;
 use regex::Regex;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::{
     fs::Metadata,
     path::{Path, PathBuf},
@@ -18,30 +18,30 @@ pub struct CheckArgs {
     pub file_path: PathBuf,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum ConditionType {
     Or,
     And,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum ConditionOrConditionsGroup {
     Condition(Condition),
-    ConditionGoup(ConditionsGroup),
+    ConditionGroup(ConditionsGroup),
 }
 
 impl ConditionChecker for ConditionOrConditionsGroup {
     fn check(&self, args: &CheckArgs) -> bool {
         match self {
             ConditionOrConditionsGroup::Condition(cond) => cond.check(args),
-            ConditionOrConditionsGroup::ConditionGoup(conditions) => conditions.check(args),
+            ConditionOrConditionsGroup::ConditionGroup(conditions) => conditions.check(args),
         }
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConditionsGroup {
     pub cond_type: ConditionType,
     pub conditions: Vec<Condition>,
@@ -57,7 +57,7 @@ impl ConditionChecker for ConditionsGroup {
 }
 
 // Condition представляет все возможные условия
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum Condition {
     FileSystemEntity(FileSystemEntity),
@@ -74,7 +74,7 @@ impl Condition {
         }
     }
 }
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FileNamePatternCondition {
     pub pattern: String, // Регулярное выражение для проверки имени файла и расширения
 }
@@ -98,7 +98,7 @@ impl FileNamePatternCondition {
     }
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum FileSystemEntity {
     File(FileType), // Обычный файл с типом
@@ -115,7 +115,7 @@ impl ConditionChecker for FileSystemEntity {
         }
     }
 }
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FileType {
     // TODO: мб сделать вектор типов
     matcher_type: MatcherTypeInernal,
@@ -134,7 +134,7 @@ impl ConditionChecker for FileType {
             })
     }
 }
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum MatcherTypeInernal {
     App,
@@ -167,7 +167,7 @@ impl From<&MatcherTypeInernal> for MatcherType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum SizeUnit {
     // TODO: возможно стоит использовать newType(https://lagleki.github.io/patterns/patterns/behavioural/newtype.html)
@@ -200,7 +200,7 @@ impl SizeUnit {
 ///  }
 /// }
 /// ```
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileSizeCondition {
     operator: ComparisonOperator,
     size: u64,
@@ -230,7 +230,7 @@ impl FileSizeCondition {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 enum ComparisonOperator {
     GreaterThan,

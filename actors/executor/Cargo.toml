@@ -1,5 +1,5 @@
 [package]
-name = "watcher"
+name = "executor"
 version.workspace = true
 edition.workspace = true
 readme.workspace = true

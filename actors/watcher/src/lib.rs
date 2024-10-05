@@ -1,23 +1,23 @@
 use std::path::PathBuf;
 
 use elfo::prelude::*;
-use fs::{FsWatcher, RecursiveModeInernal};
+use fs::{actions::Action, FsWatcher, RecursiveModeInernal};
+use protocol::{FsEvent, KeyAction};
 use serde::Deserialize;
-use tokio::io::{AsyncReadExt, BufReader};
 
-use tracing::{debug, error, info, trace, warn};
+use tracing::{error, trace, warn};
 
 pub fn new() -> Blueprint {
     ActorGroup::new()
         .config::<Config>()
-        .exec(move |ctx| async move { FsWatcherActror::new(ctx).await.main().await })
+        .exec(move |ctx| async move { FsWatcherActor::new(ctx).await.main().await })
 }
 
 #[derive(Debug, Deserialize, Clone)]
 struct WatcherConf {
     path: PathBuf,
     recursive_mode: RecursiveModeInernal,
-    action: fs::actions::Action,
+    action: Action,
 }
 
 #[derive(Debug, Deserialize, Clone)]
@@ -25,13 +25,13 @@ struct Config {
     watchers_conf_path: PathBuf,
 }
 
-struct FsWatcherActror {
+struct FsWatcherActor {
     ctx: Context<Config>,
     watchers_conf: Vec<WatcherConf>,
     watcher: FsWatcher,
 }
 
-impl FsWatcherActror {
+impl FsWatcherActor {
     async fn new(ctx: Context<Config>) -> Self {
         let mut watcher = FsWatcher::new().unwrap_or_else(|err| {
             error!("Encountered an error: {}", err); // Логирование ошибки
@@ -80,21 +80,13 @@ impl FsWatcherActror {
                         });
 
                     }
-                                                }
+                }
                 event = self.watcher.reciver.recv() => {
                     if let Some(event) = event {
                         match event {
                             Ok(event) => {
-                                // TODO: пока что вся обработка крутится в одном акторе, мб есть смысл
-                                // разделить ее по разным акторам
-                                trace!("start iteration watchers");
-                                for watcher in self.watchers_conf.iter() {
-                                    trace!("start execute action for watcher: {:?}", watcher);
-                                    if let Err(err) = watcher.action.execute(&event).await {
-                                        error!("{}", err)
-                                    }
-                                }
-                                trace!("event: {:?}", event)
+                                trace!("give event: {:?}", event);
+                                self.process_event(event).await;
                             }
                             Err(e) => error!("watch error: {:?}", e),
                         }
@@ -103,5 +95,20 @@ impl FsWatcherActror {
                 }
             }
         }
+    }
+    async fn process_event(&self, event: notify::Event) {
+        trace!("start iteration watchers");
+        let mut key_actions = vec![];
+        for path in event.paths.iter() {
+            for watcher in self.watchers_conf.iter() {
+                if path.starts_with(&watcher.path) {
+                    key_actions.push(KeyAction {
+                        path: path.clone(),
+                        action: watcher.action.clone(),
+                    });
+                }
+            }
+        }
+        self.ctx.send(FsEvent { key_actions, event }).await;
     }
 }

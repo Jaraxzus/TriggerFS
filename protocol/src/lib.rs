@@ -1,4 +1,12 @@
+use std::{
+    fmt::{Debug, Display},
+    hash::{DefaultHasher, Hash, Hasher},
+    path::{Path, PathBuf},
+};
+
 use elfo::prelude::*;
+use fs::actions::Action;
+use notify::Event;
 
 // It's just a regular message.
 // `message` derives
@@ -19,11 +27,7 @@ use elfo::prelude::*;
 //
 // // Parts of messages can be marked with `message(part)`
 // // to derive `Debug`, `Clone`, `Serialize` and `Deserialize`.
-// #[message(part)]
-// pub enum GroupFilter {
-//     All,
-//     ById(GroupId),
-// }
+
 //
 // // Responses don't have to implement `Message`.
 // #[message(part)]
@@ -31,9 +35,38 @@ use elfo::prelude::*;
 //     pub group: GroupId,
 //     pub sum: u32,
 // }
+//
+#[message(part)]
+pub struct KeyAction {
+    pub path: PathBuf,
+    pub action: Action,
+}
 
-// Wrappers can be marked as `transparent`, that adds `serde(transparent)`
-// and implements `Debug` without printing the wrapper's name.
-// #[message(part, transparent)]
-// #[derive(Copy, PartialEq, Eq, Hash, derive_more::, derive_more::Display)]
-// pub struct GroupId(u32);
+impl PartialEq for KeyAction {
+    fn eq(&self, other: &Self) -> bool {
+        let mut self_hasher = DefaultHasher::new();
+        self.hash(&mut self_hasher);
+        let mut other_hasher = DefaultHasher::new();
+        other.hash(&mut other_hasher);
+        self_hasher.finish() == other_hasher.finish()
+    }
+}
+impl Eq for KeyAction {}
+
+impl Display for KeyAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({:?}_{:?})", self.path, self.action)
+    }
+}
+
+impl Hash for KeyAction {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        format!("{}", self).hash(state)
+    }
+}
+
+#[message]
+pub struct FsEvent {
+    pub key_actions: Vec<KeyAction>,
+    pub event: Event,
+}

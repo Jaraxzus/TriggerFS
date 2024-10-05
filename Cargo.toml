@@ -8,7 +8,6 @@ readme = "README.md"
 
 [workspace]
 resolver = "2"
-# TODO: тут нужно понять как где и кто
 members = ["actors/*", "file-organizer", "libs/*", "protocol", "services/*"]
 # exclude = []
 
@@ -37,6 +36,19 @@ serde_json = "1"
 
 # другое
 regex = "1.10"
+
+[workspace.dependencies.derive_more]
+version = "1"
+features = [
+  "constructor",
+  "deref",
+  "display",
+  "error",
+  "from",
+  "into",
+  "is_variant",
+]
+
 
 [profile.release]
 lto = "fat"

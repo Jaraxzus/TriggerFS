@@ -28,7 +28,6 @@ impl FsWatcher {
         })
     }
 
-    //TODO: мб добавить защиту от повторного добовления одной и той же дерриктории
     pub fn async_watch<P: AsRef<Path>>(
         &mut self,
         path: &P,

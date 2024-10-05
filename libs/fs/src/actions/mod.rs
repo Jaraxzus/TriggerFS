@@ -2,7 +2,7 @@ mod conditions;
 mod matcher;
 
 use notify::{Event, EventKind};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::io::Error;
 use std::path::{Path, PathBuf};
 use tokio::{fs, io::AsyncReadExt, process::Command};
@@ -10,14 +10,14 @@ use tracing::{error, trace};
 
 use conditions::{CheckArgs, ConditionChecker, ConditionOrConditionsGroup};
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Action {
     triggers: Vec<EventKind>, // События файловой системы, на которые реагирует действие
     conditions: ConditionOrConditionsGroup, // Условия для выполнения действия
     action_type: ActionType,  // Тип действия
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "snake_case")]
 pub enum ActionType {
     MoveFile(MoveFileAction),
@@ -26,22 +26,22 @@ pub enum ActionType {
     Custom(CustomAction),
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveFileAction {
     destination: PathBuf,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DeleteFileAction {
     force: bool,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CreateSymlinkAction {
     to: PathBuf,
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CustomAction {
     command: String,
 }
@@ -77,7 +77,6 @@ impl Action {
             .any(|ek| matcher::match_event_kind(ek, &event.kind))
         {
             trace!("tracked event has been found {:#?}", event);
-            // TODO: подумать над расспаралеливанием задач, мб на уровне акторов
             for path in event.paths.iter() {
                 trace!("check path {:#?}", path);
                 let metadata = tokio::fs::metadata(&path).await?;
