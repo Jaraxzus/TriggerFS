@@ -1,5 +1,5 @@
 [package]
-name = "file-organizer"
+name = "TriggerFS"
 
 # repository.workspace = true
 # authors.workspace = true

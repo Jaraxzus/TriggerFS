@@ -6,7 +6,7 @@ use daemon::Daemon;
 
 use tracing::{error, info};
 
-const PID_FILE: &str = "/tmp/file-organizer.pid";
+const PID_FILE: &str = "/tmp/TriggerFS.pid";
 
 fn main() {
     // // Инициализация логгера

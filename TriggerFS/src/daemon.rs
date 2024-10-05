@@ -13,8 +13,8 @@ impl Daemon {
         F: FnOnce() -> Fut + Send + 'static,
         Fut: Future<Output = ()> + Send + 'static,
     {
-        let stdout = std::fs::File::create("/tmp/file-organizer.out")?;
-        let stderr = std::fs::File::create("/tmp/file-organizer.err")?;
+        let stdout = std::fs::File::create("/tmp/TriggerFS.out")?;
+        let stderr = std::fs::File::create("/tmp/TriggerFS.err")?;
 
         let daemonize = Daemonize::new()
             .pid_file(pid_file)
