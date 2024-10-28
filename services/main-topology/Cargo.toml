@@ -6,5 +6,7 @@ readme.workspace = true
 
 [dependencies]
 elfo.workspace = true
+dirs.workspace = true
 watcher = { path = "../../actors/watcher" }
 executor = { path = "../../actors/executor" }
+fs = { path = "../../libs/fs" }

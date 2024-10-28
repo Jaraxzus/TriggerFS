@@ -1,3 +1,7 @@
+use std::path::Path;
+
+use fs::resolve_path;
+
 // Topology definition with actor groups and connections between them.
 pub fn topology() -> elfo::Topology {
     let topology = elfo::Topology::empty();
@@ -20,8 +24,8 @@ pub fn topology() -> elfo::Topology {
 
     loggers.mount(logger);
 
-    // TODO: вынести в отедльную папку с конфигами
-    let config_path = "/home/data/Work/rust/FileOrganizer/config.toml";
+    let config_path = resolve_path("~/.config/TriggerFS/config.toml");
+
     configurers.mount(elfo::batteries::configurer::from_path(
         &topology,
         config_path,

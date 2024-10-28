@@ -1,6 +1,6 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, time::Duration};
 
-use elfo::prelude::*;
+use elfo::{prelude::*, time::Interval};
 use fs::{actions::Action, FsWatcher, RecursiveModeInernal};
 use protocol::{FsEvent, KeyAction};
 use serde::Deserialize;
@@ -22,7 +22,7 @@ struct WatcherConf {
 
 #[derive(Debug, Deserialize, Clone)]
 struct Config {
-    watchers_conf_path: PathBuf,
+    watchers_conf_path: String,
 }
 
 struct FsWatcherActor {
@@ -38,7 +38,7 @@ impl FsWatcherActor {
             panic!("Aborting due to a critical error: {}", err); // Паника с сообщением
         });
         let config = ctx.config();
-        let content = match tokio::fs::read(&config.watchers_conf_path).await {
+        let content = match tokio::fs::read(fs::resolve_path(&config.watchers_conf_path)).await {
             Ok(content) => content,
             Err(err) => {
                 error!("Error read WatcherConf: {}", err); // Логирование ошибки
@@ -69,16 +69,8 @@ impl FsWatcherActor {
                 envelope = self.ctx.recv() => {
                     if let Some(envelope) = envelope {
                         msg!(match envelope {
-                                    // More elaborate handling code can be delegated to methods.
-                                    // // These methods can easily be async.
-                                    // msg @ Increment => self.on_increment(msg),
-                                    //
-                                    // // Simpler code, however, can still be processed directly here.
-                                    // (GetValue, token) => {
-                                    //     self.ctx.respond(token, self.value);
-                                    // }
+                            // TODO: должно ли тут быть что то?
                         });
-
                     }
                 }
                 event = self.watcher.reciver.recv() => {
@@ -96,6 +88,7 @@ impl FsWatcherActor {
             }
         }
     }
+
     async fn process_event(&self, event: notify::Event) {
         trace!("start iteration watchers");
         let mut key_actions = vec![];

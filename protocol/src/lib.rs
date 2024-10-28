@@ -54,6 +54,7 @@ impl PartialEq for KeyAction {
 impl Eq for KeyAction {}
 
 impl Display for KeyAction {
+    // отвечает за фомирование ключа для актора
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "({:?}_{:?})", self.path, self.action)
     }

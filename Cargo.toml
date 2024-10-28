@@ -24,6 +24,7 @@ tracing-subscriber = "0.3"
 
 # работа с файловой системой возможно стоит перенсти в либы акторов по необходимости
 notify = { version = "6", features = ["default", "serde"] }
+dirs = "5"
 walkdir = "2.5"
 infer = "0.16"
 

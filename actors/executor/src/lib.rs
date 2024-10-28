@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use fs::actions::Action;
 use notify::Event;
 use serde::Deserialize;
@@ -5,18 +7,21 @@ use serde::Deserialize;
 use elfo::{
     prelude::*,
     routers::{MapRouter, Outcome},
+    time::Interval,
 };
 
+#[message]
+struct Tick;
+
 use protocol::*;
+use tracing::trace;
 
 pub fn new() -> Blueprint {
     ActorGroup::new()
         .config::<Config>()
         .router(MapRouter::new(|envelope| {
             msg!(match envelope {
-                FsEvent { key_actions, .. } =>
-                // Outcome::Multicast(key_actions.iter().map(|k_a| k_a.0.clone()).collect()),
-                    Outcome::Multicast(key_actions.to_vec()),
+                FsEvent { key_actions, .. } => Outcome::Multicast(key_actions.to_vec()),
                 _ => Outcome::Default,
             })
         }))
@@ -25,10 +30,10 @@ pub fn new() -> Blueprint {
 
 #[derive(Debug, Deserialize, Clone)]
 struct Config {
-    #[serde(default)]
-    todo: Option<String>,
+    last_event_timeout_ms: u64,
 }
 
+// Актор создается на каждый тип Action
 struct ExecutorActor {
     ctx: Context<Config, KeyAction>,
     action: Action,
@@ -43,13 +48,41 @@ impl ExecutorActor {
     }
 
     async fn main(mut self) {
+        let attached_interval = self.ctx.attach(Interval::new(Tick));
+
+        let mut last_event_time = tokio::time::Instant::now();
+        let mut ev = None;
+        attached_interval.start(Duration::from_millis(100));
         while let Some(envelope) = self.ctx.recv().await {
             msg!(match envelope {
-                FsEvent { event, .. } => self.process_event(event).await,
+                FsEvent { event, .. } => {
+                    trace!("fs event {:#?}", event);
+                    if ev.is_none() {
+                        if !self.check_event(&event) {
+                            break;
+                        }
+                        ev = Some(event);
+                    }
+                    last_event_time = tokio::time::Instant::now();
+                }
+                Tick => {
+                    if tokio::time::Instant::now() - last_event_time
+                        >= Duration::from_millis(self.ctx.config().last_event_timeout_ms)
+                    {
+                        if let Some(ev) = &ev {
+                            self.execute_event(ev).await;
+                            break;
+                        }
+                    }
+                }
             });
         }
     }
-    async fn process_event(&self, event: Event) {
-        self.action.execute(&event).await;
+    fn check_event(&self, event: &Event) -> bool {
+        self.action.check(event)
+    }
+
+    async fn execute_event(&self, event: &Event) {
+        self.action.execute(event).await;
     }
 }

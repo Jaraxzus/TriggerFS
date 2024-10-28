@@ -68,49 +68,47 @@ impl CustomAction {
 
 // Пример использования
 impl Action {
-    pub async fn execute(&self, event: &Event) -> Result<(), Error> {
+    pub fn check(&self, event: &Event) -> bool {
         trace!("start check event");
-        // Проверка, соответствует ли событие триггеру
-        if self
-            .triggers
+        self.triggers
             .iter()
             .any(|ek| matcher::match_event_kind(ek, &event.kind))
-        {
-            trace!("tracked event has been found {:#?}", event);
-            for path in event.paths.iter() {
-                trace!("check path {:#?}", path);
-                let metadata = tokio::fs::metadata(&path).await?;
-                // Проверка всех условий
-                let mut file = fs::File::open(path).await?;
-                let mut buffer = vec![0; 512];
-                let _ = file.read(&mut buffer).await?;
-                trace!("read buf len: {:#?}", buffer.len());
-                let inf = infer::get(&buffer);
-                trace!("inf: {:#?}", inf);
-                let matcher_type: Option<infer::MatcherType> = inf.map(|i| i.matcher_type());
-                trace!("matcher_type: {:#?}", matcher_type);
-                let args = CheckArgs {
-                    file_metadata: metadata,
-                    file_type: matcher_type,
-                    file_path: path.to_owned(),
-                };
-                if self.conditions.check(&args) {
-                    // if self.conditions.iter().all(|cond| cond.check(&args)) {
-                    match &self.action_type {
-                        ActionType::MoveFile(move_file_action) => {
-                            move_file(path, &move_file_action.destination).await?;
-                        }
-                        ActionType::DeleteFile(delete_file_action) => {
-                            trace!("Deleting file with force: {}", delete_file_action.force);
-                            remove_file(path).await?;
-                        }
-                        ActionType::CreateSymlink(create_symlink_action) => {
-                            create_symlink(path, &create_symlink_action.to).await?;
-                        }
-                        ActionType::Custom(custom_action) => {
-                            trace!("run custom command {} ", &custom_action.command);
-                            custom_action.execute_command(path).await?;
-                        }
+    }
+    pub async fn execute(&self, event: &Event) -> Result<(), Error> {
+        trace!("tracked event has been found {:#?}", event);
+        for path in event.paths.iter() {
+            trace!("check path {:#?}", path);
+            let metadata = tokio::fs::metadata(&path).await?;
+            // Проверка всех условий
+            let mut file = fs::File::open(path).await?;
+            let mut buffer = vec![0; 512];
+            let _ = file.read(&mut buffer).await?;
+            trace!("read buf len: {:#?}", buffer.len());
+            let inf = infer::get(&buffer);
+            trace!("inf: {:#?}", inf);
+            let matcher_type: Option<infer::MatcherType> = inf.map(|i| i.matcher_type());
+            trace!("matcher_type: {:#?}", matcher_type);
+            let args = CheckArgs {
+                file_metadata: metadata,
+                file_type: matcher_type,
+                file_path: path.to_owned(),
+            };
+            if self.conditions.check(&args) {
+                // if self.conditions.iter().all(|cond| cond.check(&args)) {
+                match &self.action_type {
+                    ActionType::MoveFile(move_file_action) => {
+                        move_file(path, &move_file_action.destination).await?;
+                    }
+                    ActionType::DeleteFile(delete_file_action) => {
+                        trace!("Deleting file with force: {}", delete_file_action.force);
+                        remove_file(path).await?;
+                    }
+                    ActionType::CreateSymlink(create_symlink_action) => {
+                        create_symlink(path, &create_symlink_action.to).await?;
+                    }
+                    ActionType::Custom(custom_action) => {
+                        trace!("run custom command {} ", &custom_action.command);
+                        custom_action.execute_command(path).await?;
                     }
                 }
             }
