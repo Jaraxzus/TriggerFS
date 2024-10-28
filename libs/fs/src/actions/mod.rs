@@ -40,7 +40,8 @@ pub struct DeleteFileAction {
 pub struct CreateSymlinkAction {
     to: PathBuf,
 }
-
+/// CustomAction принимает команду в виде строки в которой может содеражаться "{}" вместо скобок
+/// будет подставлен путь файла с на котором нужно выполнить команду
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct CustomAction {
     command: String,

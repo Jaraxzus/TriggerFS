@@ -1,6 +1,6 @@
-use std::{path::PathBuf, time::Duration};
+use std::path::PathBuf;
 
-use elfo::{prelude::*, time::Interval};
+use elfo::prelude::*;
 use fs::{actions::Action, FsWatcher, RecursiveModeInernal};
 use protocol::{FsEvent, KeyAction};
 use serde::Deserialize;

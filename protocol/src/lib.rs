@@ -1,41 +1,13 @@
 use std::{
     fmt::{Debug, Display},
     hash::{DefaultHasher, Hash, Hasher},
-    path::{Path, PathBuf},
+    path::PathBuf,
 };
 
 use elfo::prelude::*;
 use fs::actions::Action;
 use notify::Event;
 
-// It's just a regular message.
-// `message` derives
-// * `Debug` for logging in dev env
-// * `Serialize` and `Deserialize` for dumping and comminication between nodes
-// * `Message` and `Request` to restrict contracts
-// #[message]
-// pub struct AddNum {
-//     pub group: GroupId,
-//     pub num: u32,
-// }
-//
-// // Messages with specified `ret` are requests.
-// #[message(ret = Summary)]
-// pub struct Summarize {
-//     pub group_filter: GroupFilter,
-// }
-//
-// // Parts of messages can be marked with `message(part)`
-// // to derive `Debug`, `Clone`, `Serialize` and `Deserialize`.
-
-//
-// // Responses don't have to implement `Message`.
-// #[message(part)]
-// pub struct Summary {
-//     pub group: GroupId,
-//     pub sum: u32,
-// }
-//
 #[message(part)]
 pub struct KeyAction {
     pub path: PathBuf,

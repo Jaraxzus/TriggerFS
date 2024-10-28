@@ -14,7 +14,7 @@ use elfo::{
 struct Tick;
 
 use protocol::*;
-use tracing::trace;
+use tracing::{error, trace};
 
 pub fn new() -> Blueprint {
     ActorGroup::new()
@@ -83,6 +83,9 @@ impl ExecutorActor {
     }
 
     async fn execute_event(&self, event: &Event) {
-        self.action.execute(event).await;
+        let res = self.action.execute(event).await;
+        if res.is_err() {
+            error!("{:#?}", res)
+        }
     }
 }

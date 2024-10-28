@@ -19,3 +19,7 @@ notify.workspace = true
 infer.workspace = true
 
 regex.workspace = true
+
+[dependencies.byte-unit]
+version = "*"
+features = ["serde"]

@@ -117,7 +117,6 @@ impl ConditionChecker for FileSystemEntity {
 }
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct FileType {
-    // TODO: мб сделать вектор типов
     matcher_type: MatcherTypeInernal,
     operator: ComparisonOperator,
 }
@@ -167,27 +166,6 @@ impl From<&MatcherTypeInernal> for MatcherType {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-enum SizeUnit {
-    // TODO: возможно стоит использовать newType(https://lagleki.github.io/patterns/patterns/behavioural/newtype.html)
-    // или вообще найти готовый крейт думаю такой сто проц есть
-    Bytes,
-    Kilobytes,
-    Megabytes,
-    Gigabytes,
-}
-
-impl SizeUnit {
-    fn to_bytes(self, size: u64) -> u64 {
-        match self {
-            SizeUnit::Bytes => size,
-            SizeUnit::Kilobytes => size * 1024,
-            SizeUnit::Megabytes => size * 1024 * 1024,
-            SizeUnit::Gigabytes => size * 1024 * 1024 * 1024,
-        }
-    }
-}
 /// FileSizeCondition условия по размеру файла, нужно быть аккуратными с тригерами перед этим
 /// условием, так как на момент создания файл может быть не до конца записан, и сравнение будет не
 /// корректным, лучше всего использовать условие
@@ -203,8 +181,7 @@ impl SizeUnit {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileSizeCondition {
     operator: ComparisonOperator,
-    size: u64,
-    unit: SizeUnit,
+    byte_unit: byte_unit::Byte,
 }
 impl ConditionChecker for FileSizeCondition {
     fn check(&self, args: &CheckArgs) -> bool {
@@ -216,7 +193,8 @@ impl ConditionChecker for FileSizeCondition {
 impl FileSizeCondition {
     fn is_satisfied(&self, metadata: &Metadata) -> bool {
         let file_size = metadata.len();
-        let size_in_bytes = self.unit.to_bytes(self.size);
+        let size_in_bytes = self.byte_unit.as_u64();
+
         trace!("file_size: {}, size_in_bytes: {}", file_size, size_in_bytes);
 
         match self.operator {

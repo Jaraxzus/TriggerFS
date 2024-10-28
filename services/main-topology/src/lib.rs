@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use fs::resolve_path;
 
 // Topology definition with actor groups and connections between them.
